@@ -1,12 +1,23 @@
 from lxml import etree
 from lxml.builder import E
+from events import estimate, invoice
 
+
+# Document
 class Document:
-	def __init__(self, body):
-		self.body = body
+	xpath = './/body'
 
-	@property
-	def template(self):
+	def __init__(self, event):
+		self.status_code = event['statusCode']
+		self.json_body = event['body']
+		self.tree = Document.xml()
+
+	@classmethod
+	def create(cls, event):
+		return globals()[event['body']['document'].capitalize()](event)
+
+	@classmethod
+	def xml(cls):
 		return (
 			E.html(
 				E.head(
@@ -52,58 +63,59 @@ class Document:
 				)
 			)
 		)
+	
+	def to_string(self):
+		print(etree.tostring(self.tree))
 
-	def html(self):
-		return self.common().find('.//body').append(self.template)
 
-	def style(self):
-		style = ''''''
-
-	def to_file(self, template):
-		with open(f"./{self.__class__.__name__.lower()}.html",'wb') as f:
-			f.write(etree.tostring(
-				self.html(self.template), xml_declaration=True, pretty_print=True,
-				encoding='utf-8', doctype='<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
-			))
-		f.close()
-
+# Invoice
 class Invoice(Document):
-	def __init__(self, body):
-		super().__init__(body)
+	def __init__(self, event):
+		super().__init__(event)
+		self.tree.find(self.xpath).append(self.xml())
+		self.to_string()
 
-	@property	
-	def template(self):
-			return (
-				E.table(
-					E.tr(
-						E.th('Materials'),
-					),
-					E.tr(
-						E.th('Description'),
-						E.th('Quantity'),
-						E.th('Cost'),
-						E.th('Total'),
-					),
-					E.tr('na', id='materials'),
-					E.tr(
-						E.th('Labor'),
-					),
-					E.tr(
-						E.th('Description'),
-						E.th('Quantity'),
-						E.th('Cost'),
-						E.th('Total'),
-					),
-					E.tr('na', id='labor'),
-				)
+	@classmethod
+	def xml(cls):
+		return (
+			E.table(
+				E.tr(
+					E.th('Materials'),
+				),
+				E.tr(
+					E.th('Description'),
+					E.th('Quantity'),
+					E.th('Cost'),
+					E.th('Total'),
+				),
+				E.tr('na', id='materials'),
+				E.tr(
+					E.th('Labor'),
+				),
+				E.tr(
+					E.th('Description'),
+					E.th('Quantity'),
+					E.th('Cost'),
+					E.th('Total'),
+				),
+				E.tr('na', id='labor'),
 			)
+		)
 
+	@classmethod
+	def css(cls):
+		return ''
+
+
+# Estimate
 class Estimate(Document):
-	def __init__(self, body):
-		super().__init__(body)
+	def __init__(self, event):
+		super().__init__(event)
+		self.tree.find(self.xpath).append(self.xml())
+		self.to_string()
 
-	@property
-	def template(self):
+	@classmethod
+	def xml(cls):
 		return (
 			E.table(
 				E.tr(
@@ -111,23 +123,24 @@ class Estimate(Document):
 					E.th("column2"),
 					E.th("column3"),
 				),
-			),
+			)
 		)
 
+	@classmethod
+	def css(cls):
+		return ''
+
+
+# AWS Trigger
 def lambda_handler(event, context):
-	document_type = event['body']['document'].capitalize()
-	document_class = globals()[document_type]
-	event['body'].pop('document', None)
-	document_instance = document_class(event['body'])
-	document_instance.to_file()
-	body = etree.tostring(document_instance.html())
 	r = {
 		'statusCode': 200,
-		'body': body,
+		'doc': invoice,
 		'headers': { 'Content-Type': 'text/html' },
 	}
 	return r
 
-lambda_handler(event, None)
+def non_lambda_handler(event):
+	doc = Document.create(event)
 
-b = ''
+non_lambda_handler(invoice)
