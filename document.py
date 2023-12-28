@@ -1,31 +1,57 @@
-from lxml import etree
-from lxml.builder import E
-from events import estimate, invoice
+from lxml import etree # For representing and manimpulating XML trees
+from lxml.builder import E # For building XML trees
+from events import estimate, invoice # Sample REST API data
+
+#
+# Document Generator Script
+#
+
+# Creates an HTML file (with CSS) to represent different kinds of documents
+# originating from Retool (such as "Invoice", "Estimate", or other as of yet
+# unspecifed reports.
+
+# The script can output to:
+# - The python console
+# - A local file
+# - A REST API response
+# - An AWS S3 bucket file
+
+# The script uses a parent `Document` class which can be subclassed for
+# different kinds of report types (e.g.: "Estimate", "Invoice", etc)
+# Implementing a new report would just require creating a new Document subclass
+# and writing the appopriate document specific code (e.g.: the `xml()`, `css()``
+# and `populate()` methods.
 
 
-# Document
+# The Document Class
 class Document:
-	xpath = './/body'
+	xpath = './/body' # Location for appending document specific XML data
 
+	# TODO: Implement handling of status codes
 	def __init__(self, event):
-		self.status_code = event['statusCode']
-		self.json_body = event['body']
-		self.tree = Document.xml()
+		self.status_code = event['statusCode'] # In case of non-200 result
+		self.json_body = event['body'] # The Retool specific data
+		self.tree = Document.xml() # Populate the initial tree
 
+	# This is a utility method, only used to generate the specific document
+	# subclass, determined by the value of the "document" property within the
+	# API call.
 	@classmethod
 	def create(cls, event):
 		return globals()[event['body']['document'].capitalize()](event)
 
+	# This is the core XML data, common to every document type.
+	# TODO: Add CSS to the XML document's "style" property.
 	@classmethod
 	def xml(cls):
 		return (
 			E.html(
 				E.head(
 					E.title("McGraw D&B Invoice"),
-					# E.style(self.style()),
+					E.style(cls.css()), # Inserts CSS instructions
 				),
 				E.body(
-					E.div(), # MDB Logo
+					E.div(), # Use for the MDB Logo
 					E.table(
 						E.tr(
 							E.td('Contrator:'),
@@ -63,18 +89,30 @@ class Document:
 				)
 			)
 		)
-	
+
+	# These are the core CSS instructions, common to every document type.
+	@classmethod
+	def css(cls):
+		return ''
+
+	# A quick method for printing an Etree object to the console as a string.
 	def to_string(self):
 		print(etree.tostring(self.tree))
 
 
-# Invoice
+# The Invoice Class: A subclass of Document
 class Invoice(Document):
 	def __init__(self, event):
-		super().__init__(event)
+		super().__init__(event) # Call the parent class object initializer.
+
+		# Append this class' xml template to the XML tree represention to the end of
+		# the specified XML xpath location.
 		self.tree.find(self.xpath).append(self.xml())
+
+		# Evaluate the result via the console.
 		self.to_string()
 
+	# This is the document specific xml template.
 	@classmethod
 	def xml(cls):
 		return (
@@ -102,12 +140,14 @@ class Invoice(Document):
 			)
 		)
 
+	# These are the document specific CSS instructions.
 	@classmethod
 	def css(cls):
 		return ''
 
 
-# Estimate
+# The Estimate Class: A subclass of Document
+# This works the same as "Invoice" subclass above.
 class Estimate(Document):
 	def __init__(self, event):
 		super().__init__(event)
@@ -131,16 +171,20 @@ class Estimate(Document):
 		return ''
 
 
-# AWS Trigger
+# The AWS Trigger
+# This method is required by AWS Lambda.
+# The "event" is the data from the API call.
+# The "context" is (roughly) the internal Lambda environment (not used).
 def lambda_handler(event, context):
-	r = {
+	return {
 		'statusCode': 200,
-		'doc': invoice,
+		# The line below creates a subclass of `Document` from the "document"
+		# "property" of the API requests' JSON body.
+		'doc': Document.create(event),
 		'headers': { 'Content-Type': 'text/html' },
 	}
-	return r
 
-def non_lambda_handler(event):
-	doc = Document.create(event)
-
-non_lambda_handler(invoice)
+# Non-AWS Trigger
+# These must be commented out while in use by AWS Lambda.
+# Document.create(estimate)
+# Document.create(invoice)
