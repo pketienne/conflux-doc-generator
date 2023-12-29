@@ -2,36 +2,22 @@ from lxml import etree # For representing and manimpulating XML trees
 from lxml.builder import E # For building XML trees
 from events import estimate, invoice # Sample REST API data
 
-#
-# Document Generator Script
-#
-
-# Creates an HTML file (with CSS) to represent different kinds of documents
-# originating from Retool (such as "Invoice", "Estimate", or other as of yet
-# unspecifed reports.
-
-# The script can output to:
-# - The python console
-# - A local file
-# - A REST API response
-# - An AWS S3 bucket file
-
-# The script uses a parent `Document` class which can be subclassed for
-# different kinds of report types (e.g.: "Estimate", "Invoice", etc)
-# Implementing a new report would just require creating a new Document subclass
-# and writing the appopriate document specific code (e.g.: the `xml()`, `css()``
-# and `populate()` methods.
-
 
 # The Document Class
 class Document:
 	xpath = './/body' # Location for appending document specific XML data
+	channels = { "console": True, "local": True, "retool": False, "s3": False }
 
 	# TODO: Implement handling of status codes
 	def __init__(self, event):
 		self.status_code = event['statusCode'] # In case of non-200 result
 		self.json_body = event['body'] # The Retool specific data
 		self.tree = Document.xml() # Populate the initial tree
+		self.report = '' # string representation of the etree object
+		self.response = { # Core of API response, will have properties appended
+			'statusCode': 200,
+			'headers': { 'Content-Type': 'text/html' },
+		}
 
 	# This is a utility method, only used to generate the specific document
 	# subclass, determined by the value of the "document" property within the
@@ -95,22 +81,63 @@ class Document:
 	def css(cls):
 		return ''
 
-	# A quick method for printing an Etree object to the console as a string.
+	def generate(self):
+		self.compile() # Combine templates from parent and child classes
+		self.populate() # Populate compiled template with received data
+		self.render() # Render the etree object to a string
+		self.deliver() # Deliver the output to the appropriate channel
+
+	def compile(self):
+		# Append this class' xml template to the XML tree represention to the end of
+		# the specified XML xpath location.
+		self.tree.find(self.xpath).append(self.xml())
+
+	def populate(self):
+		'' # Requires subclass override
+
+	# Render the output through the enabled channels.
+	def render(self):
+		self.report = etree.tostring(
+			self.tree,
+			xml_declaration=True,
+			pretty_print=True,
+			encoding='utf-8',
+			doctype='<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
+		)
+
+	def deliver(self):
+		if Document.channels['console']:
+			self.to_string()
+		if Document.channels['local']:
+			self.to_file()
+		if Document.channels['retool']:
+			self.to_retool()
+		if Document.channels['s3']:
+			self.to_s3()
+
 	def to_string(self):
-		print(etree.tostring(self.tree))
+		print(self.report.decode())
+
+	def to_file(self):
+		with open(f"./{self.__class__.__name__.lower()}.html", 'wb') as f:
+			f.write(self.report)
+		f.close()
+
+	def to_retool(self):
+		self.response['body'] = self.report.decode()
+
+	def to_s3(self):
+		# TODO: Save to S3 bucket using Report ID as file name, return file URL.
+		# self.report.decode() => S3 bucket
+		url = 'https://amazon.s3/bucket/file.html'
+		self.response['url'] = url
 
 
 # The Invoice Class: A subclass of Document
 class Invoice(Document):
 	def __init__(self, event):
 		super().__init__(event) # Call the parent class object initializer.
-
-		# Append this class' xml template to the XML tree represention to the end of
-		# the specified XML xpath location.
-		self.tree.find(self.xpath).append(self.xml())
-
-		# Evaluate the result via the console.
-		self.to_string()
+		self.generate() # Execute the document generation
 
 	# This is the document specific xml template.
 	@classmethod
@@ -145,14 +172,17 @@ class Invoice(Document):
 	def css(cls):
 		return ''
 
+	# This method uses the json body data to add data into the xml tree.
+	def populate(self):
+		'' # TODO: Implement Me!
+
 
 # The Estimate Class: A subclass of Document
 # This works the same as "Invoice" subclass above.
 class Estimate(Document):
 	def __init__(self, event):
 		super().__init__(event)
-		self.tree.find(self.xpath).append(self.xml())
-		self.to_string()
+		self.generate()
 
 	@classmethod
 	def xml(cls):
@@ -170,21 +200,31 @@ class Estimate(Document):
 	def css(cls):
 		return ''
 
+	def populate(self):
+		'' # TODO: Implement Me!
+
 
 # The AWS Trigger
 # This method is required by AWS Lambda.
 # The "event" is the data from the API call.
 # The "context" is (roughly) the internal Lambda environment (not used).
 def lambda_handler(event, context):
+	doc = Document.create(event)
+
 	return {
 		'statusCode': 200,
 		# The line below creates a subclass of `Document` from the "document"
 		# "property" of the API requests' JSON body.
-		'doc': Document.create(event),
+		'doc': Document.create(event).tree,
+		# 'url': Document.create(event).url,
 		'headers': { 'Content-Type': 'text/html' },
 	}
 
 # Non-AWS Trigger
-# These must be commented out while in use by AWS Lambda.
-# Document.create(estimate)
-# Document.create(invoice)
+def generate():
+	documents = [estimate, invoice] # Add others as available
+	for d in documents: # Loop through document samples
+		Document.create(d) # Generate a document per type
+
+# This must be commented out while in use by AWS Lambda.
+generate()
