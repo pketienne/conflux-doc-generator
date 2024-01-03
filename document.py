@@ -1,17 +1,17 @@
 from lxml import etree # For representing and manimpulating XML trees
 from lxml.builder import E # For building XML trees
-from events import estimate, invoice # Sample REST API data
+# from events import estimate, invoice # Sample REST API data
 
 
 # The Document Class
 class Document:
 	xpath = './/body' # Location for appending document specific XML data
-	channels = { "console": True, "local": True, "retool": False, "s3": False }
+	channels = { "console": True, "local": True, "retool": True, "s3": False }
 
 	# TODO: Implement handling of status codes
 	def __init__(self, event):
-		self.status_code = event['statusCode'] # In case of non-200 result
-		self.json_body = event['body'] # The Retool specific data
+		# self.status_code = event['statusCode'] # In case of non-200 result
+		# self.json_body = event['body'] # The Retool specific data
 		self.tree = Document.xml() # Populate the initial tree
 		self.report = '' # string representation of the etree object
 		self.response = { # Core of API response, will have properties appended
@@ -24,7 +24,7 @@ class Document:
 	# API call.
 	@classmethod
 	def create(cls, event):
-		return globals()[event['body']['document'].capitalize()](event)
+		return globals()[event['document'].capitalize()](event)
 
 	# This is the core XML data, common to every document type.
 	# TODO: Add CSS to the XML document's "style" property.
@@ -119,9 +119,8 @@ class Document:
 		print(self.report.decode())
 
 	def to_file(self):
-		with open(f"./{self.__class__.__name__.lower()}.html", 'wb') as f:
+		with open(f"./html/{self.__class__.__name__.lower()}.html", 'wb') as f:
 			f.write(self.report)
-		f.close()
 
 	def to_retool(self):
 		self.response['body'] = self.report.decode()
@@ -209,16 +208,8 @@ class Estimate(Document):
 # The "event" is the data from the API call.
 # The "context" is (roughly) the internal Lambda environment (not used).
 def lambda_handler(event, context):
-	doc = Document.create(event)
-
-	return {
-		'statusCode': 200,
-		# The line below creates a subclass of `Document` from the "document"
-		# "property" of the API requests' JSON body.
-		'doc': Document.create(event).tree,
-		# 'url': Document.create(event).url,
-		'headers': { 'Content-Type': 'text/html' },
-	}
+	return Document.create(event).response
+	# return event
 
 # Non-AWS Trigger
 def generate():
@@ -227,4 +218,4 @@ def generate():
 		Document.create(d) # Generate a document per type
 
 # This must be commented out while in use by AWS Lambda.
-generate()
+# generate()
