@@ -3,65 +3,151 @@
 <html>
   <head>
     <title>McGraw D&amp;B Invoice</title>
-    <style></style>
+    <style>
+			body { margin: 20px 50px; }
+			#logo {
+				width: 500px;
+				height: 125px;
+				background-image: url('../../../Shared/mdb-logo.png');
+				margin: auto;
+			}
+			h1 {
+				background-color: #abc;
+				padding: 5px 15px;
+				border: 1px solid #999;
+			}
+			h2 {
+				margin-left: 35px;
+			}
+			table {
+				margin: auto;
+				width: 100%;
+				text-align: left;
+			}
+			table#materials th { background-color: #66d9ff; }
+			table#labors th { background-color: #33aacc; }
+			table#totals th { background-color: #3388cc; }
+			td, th {
+				border: 1px solid #000;
+				padding: 5px;
+			}
+			th.quantity { width: 100px; }
+			th.cost { width: 100px; }
+			th.total { width: 100px; }
+			td.grand-total { background-color: #e0e0e0 }
+			ul { list-style-type: none; }
+			span.key { font-weight: bold; }
+		</style>
   </head>
   <body>
-    <div/>
-    <table>
-      <tr>
-        <td>Contrator:</td>
-        <td>McGraw Design &amp; Build</td>
-        <td>Invoice #:</td>
-        <td>INVOICE-#</td>
-        <td>Client:</td>
-        <td>CLIENT-NAME</td>
-      </tr>
-      <tr>
-        <td>Address:</td>
-        <td>CONTRACTOR-ADDRESS</td>
-        <td>Invoice Date:</td>
-        <td>INVOICE-DATE</td>
-        <td>Address:</td>
-        <td>CLIENT-ADDRESS</td>
-      </tr>
-      <tr>
-        <td>Email:</td>
-        <td>CONTRACTOR-EMAIL</td>
-        <td>Invoice Subject</td>
-        <td>INVOICE-SUBJECT</td>
-        <td>Email:</td>
-        <td>CLIENT-EMAIL</td>
-      </tr>
-      <tr>
-        <td>Phone:</td>
-        <td>CONTRACTOR-PHONE</td>
-        <td/>
-        <td/>
-        <td>Phone:</td>
-        <td>CLIENT-PHONE</td>
-      </tr>
-    </table>
-    <table>
-      <tr>
-        <th>Materials</th>
-      </tr>
-      <tr>
-        <th>Description</th>
-        <th>Quantity</th>
-        <th>Cost</th>
-        <th>Total</th>
-      </tr>
-      <tr id="materials">na</tr>
-      <tr>
-        <th>Labor</th>
-      </tr>
-      <tr>
-        <th>Description</th>
-        <th>Quantity</th>
-        <th>Cost</th>
-        <th>Total</th>
-      </tr>
-      <tr id="labor">na</tr>
-    </table>
+    <div id="logo"></div>
+    <h1>Project Details</h1>
+    <h2>Contractor</h2>
+    <ul id="contractor">
+      <li>
+        <span class="key">Name:</span>
+        <span class="value">McGraw Design &amp; Build</span>
+      </li>
+      <li>
+        <span class="key">Address:</span>
+        <span class="value">448 W 31st St Indianapolis, IN 46208</span>
+      </li>
+      <li>
+        <span class="key">Email:</span>
+        <span class="value">oliver@mcgrawdesignbuild.com</span>
+      </li>
+      <li>
+        <span class="key">Phone:</span>
+        <span class="value">(317) 782-5271</span>
+      </li>
+      <li>
+        <span class="key">Website:</span>
+        <span class="value">https://mcgrawdesignbuild.com/</span>
+      </li>
+    </ul>
+    <h2>Client</h2>
+    <ul id="client">
+      <li>
+        <span class="key">Name:</span>
+        <span class="value" id="client_name"></span>
+      </li>
+      <li>
+        <span class="key">Address:</span>
+        <span class="value" id="client_address"></span>
+      </li>
+      <li>
+        <span class="key">Email:</span>
+        <span class="value" id="client_email"></span>
+      </li>
+      <li>
+        <span class="key">Phone:</span>
+        <span class="value" id="client_phone"></span>
+      </li>
+    </ul>
+    <div>
+      <h2>Invoice</h2>
+      <ul id="client">
+        <li>
+          <span class="key">Invoice #:</span>
+          <span class="value"></span>
+        </li>
+        <li>
+          <span class="key">Invoice Date:</span>
+          <span class="value"></span>
+        </li>
+        <li>
+          <span class="key">Invoice Notes:</span>
+          <span class="value"></span>
+        </li>
+      </ul>
+      <h1>Costs</h1>
+      <h2>Materials</h2>
+      <table id="materials">
+        <thead>
+          <tr>
+            <th class="description">Description</th>
+            <th class="quantity">Quantity</th>
+            <th class="cost">Cost</th>
+            <th class="total">Total</th>
+          </tr>
+        </thead>
+        <tbody/>
+      </table>
+      <h2>Labor</h2>
+      <table id="labors">
+        <thead>
+          <tr>
+            <th class="description">Description</th>
+            <th class="quantity">Quantity</th>
+            <th class="cost">Cost</th>
+            <th class="total">Total</th>
+          </tr>
+        </thead>
+        <tbody/>
+      </table>
+      <h2>Totals</h2>
+      <table id="totals">
+        <thead>
+          <tr>
+            <th class="category">Cost Type</th>
+            <th class="total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Materials</td>
+            <td id="total-materials"/>
+          </tr>
+          <tr>
+            <td>Labor</td>
+            <td id="total-labors"/>
+          </tr>
+          <tr>
+            <td class="grand-total">Grand Total</td>
+            <td id="grand-total" class="grand-total"/>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </body>
 </html>
