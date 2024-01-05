@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <title>McGraw D&amp;B Invoice</title>
+    <style>
+			body { margin: 20px 50px; }
+			#logo {
+				width: 500px;
+				height: 125px;
+				background-image: url('../../Shared/mdb-logo.png');
+				margin: auto;
+			}
+			h1 {
+				background-color: #abc;
+				padding: 5px 15px;
+				border: 1px solid #999;
+			}
+			h2 {
+				margin-left: 35px;
+			}
+			table {
+				margin: auto;
+				margin-left: 35px;
+				width: 100%;
+				text-align: left;
+			}
+			table#materials th { background-color: #66d9ff; }
+			table#labors th { background-color: #33aacc; }
+			table#totals th { background-color: #3388cc; }
+			td, th {
+				border: 1px solid #000;
+				padding: 5px;
+			}
+			th.quantity { width: 100px; }
+			th.cost { width: 100px; }
+			th.total { width: 100px; }
+			td.grand-total { background-color: #e0e0e0 }
+			ul { list-style-type: none; }
+			span.key { font-weight: bold; }
+		</style>
+  </head>
+  <body>
+    <div id="logo">&nbsp;</div>
+		<h1>Project Details</h1>
+		<h2>Contractor</h2>
+		<ul id="contractor">
+			<li>
+				<span class="key">Name:</span>
+				<span class="value">McGraw Design &amp; Build</span>
+			</li>
+			<li>
+				<span class="key">Address:</span>
+				<span class="value">448 W 31 St Indianapolis, IN 46208</span>
+			</li>
+			<li>
+				<span class="key">Email:</span>
+				<span class="value">oliver@mcgrawdesignbuild.com</span>
+			</li>
+			<li>
+				<span class="key">Phone:</span>
+				<span class="value">(317) 782-5271</span> 
+			</li>
+			<li>
+				<span class="key">Website:</span>
+				<span class="value">https://mcgrawdesignbuild.com/</span>
+			</li>
+		</ul>
+		<h2>Client</h2>
+		<ul id="client">
+			<li>
+				<span class="key">Name:</span>
+				<span class="value">Fountain Square Clay Center</span>
+			</li>
+			<li>
+				<span class="key">Address:</span>
+				<span class="value">123 Street Rd Indianapolis, IN 40000</span>
+			</li>
+			<li>
+				<span class="key">Email:</span>
+				<span class="value">@claycenter.ext</span>
+			</li>
+			<li>
+				<span class="key">Phone:</span>
+				<span class="value">(317) 000-0000</span> 
+			</li>
+		</ul>
+		<h2>Invoice</h2>
+		<ul id="invoice">
+			<li>
+				<span class="key">Invoice #:</span>
+				<span class="value" id="invoice-number">51258</span>
+			</li>
+			<li>
+				<span class="key">Invoice Date:</span>
+				<span class="value" id="invoice-date">01/08/2024</span>
+			</li>
+			<li>
+				<span class="key">Invoice Notes:</span>
+				<span class="value" id="invoice-notes">First invoice for work completed and deposits due for remodeling at 950 Hosbrook including: \n-Reroof East including structural repairs, skylights, and TPO roofing, all completed except coping and ventilation fan. \n-Masonry work including a total of 19 lintels, rebuding SE corner of building, and extensive tuckpointing. \n-Demolition and disposal of non-structural elements of W section of building. \n-Deposit to electrican to begin service upgrades. \n-Overbudget items include replacement of roof decking, additional framing materials to repair around skylights (upgraded beams from 16\" to 24\" as per engineering), and 10 additional lintels after demolition exposed many more as damaged.</span>
+			</li>
+		</ul>
+		<h1>Costs</h1>
+		<h2>Materials</h2>
+    <table id="materials">
+      <tr>
+        <th class="description">Description</th>
+        <th class="quantity">Quantity</th>
+        <th class="cost">Cost</th>
+        <th class="total">Total</th>
+      </tr>
+      <tr>
+				<td>Task: Rebuild / repair SE corner of building	Description: masonry repairs.</td>
+        <td>1</td>
+        <td>$450</td>
+        <td>$450</td>
+      </tr>
+    </table>
+		<h2>Labor</h2>
+    <table id="labors">
+      <tr>
+        <th class="description">Description</th>
+        <th class="quantity">Quantity</th>
+        <th class="cost">Cost</th>
+        <th class="total">Total</th>
+      </tr>
+      <tr>
+        <td>Task: masonry removal and demolition	Description: demolish sections of floor. exploritory demolition for plumbing and to verify footings.</td>
+        <td>2</td>
+        <td>$50</td>
+        <td>$100</td>
+      </tr>
+    </table>
+		<h2>Totals</h2>
+    <table id="totals">
+      <tr>
+        <th>Category</th>
+        <th>Total</th>
+      </tr>
+      <tr>
+        <td>Materials</td>
+        <td>$XXX.xx</td>
+      </tr>
+      <tr>
+        <td>Labor</td>
+        <td>$XXX.xx</td>
+      </tr>
+      <tr>
+        <td class="grand-total">Grand Total</td>
+        <td class="grand-total">$XXX.xx</td>
+      </tr>
+    </table>
+  </body>
+</html>
